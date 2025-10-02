@@ -1,0 +1,291 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  avatar    String?
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+
+  // Storage relations
+  projects              Project[]        @relation("UserProjects")
+  satelliteArchives     SatelliteArchive[]
+  droneUploads          DroneImagery[]
+  fieldDatabaseEntries  FieldDatabaseEntry[]
+  ledgerEntries         BlockchainLedgerEntry[]
+  auditLogs             AuditLog[]
+
+  @@map("users")
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  slug        String   @unique
+  excerpt     String?
+  featuredImage String?
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  likes    Like[]
+  tags     PostTag[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  postId   String
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Relations
+  postId   String
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, authorId])
+  @@map("likes")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  // Relations
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  id     String @id @default(cuid())
+  postId String
+  tagId  String
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
+  @@map("post_tags")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+/// Domain models
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  location    String?
+  ownerId     String
+  owner       User     @relation("UserProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  landParcels          LandParcel[]
+  satelliteArchives    SatelliteArchive[]
+  droneUploads         DroneImagery[]
+  fieldDatabaseEntries FieldDatabaseEntry[]
+  ledgerEntries        BlockchainLedgerEntry[]
+
+  @@index([ownerId])
+  @@map("projects")
+}
+
+model LandParcel {
+  id         String   @id @default(cuid())
+  projectId  String
+  name       String
+  areaHa     Float?
+  centroidLat Float?
+  centroidLng Float?
+  geometry   Json?    // GeoJSON polygon/multipolygon
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  droneUploads DroneImagery[]
+  fieldDatabaseEntries FieldDatabaseEntry[]
+
+  @@index([projectId])
+  @@map("land_parcels")
+}
+
+model SatelliteArchive {
+  id             String   @id @default(cuid())
+  provider       String   // e.g., Sentinel-2, Landsat-8, Planet
+  acquisitionAt  DateTime
+  fileKey        String   // storage key/path
+  checksum       String?
+  sizeBytes      Int?
+  mimeType       String?
+  bbox           Json?    // bounding box GeoJSON / coords
+  bands          String?  // comma-separated or JSON description
+  metadata       Json?
+  uploadedById   String
+  projectId      String
+  createdAt      DateTime @default(now())
+
+  // Relations
+  uploadedBy     User     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([uploadedById])
+  @@index([projectId, acquisitionAt])
+  @@map("satellite_archives")
+}
+
+enum ProcessingStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model DroneImagery {
+  id               String            @id @default(cuid())
+  capturedAt       DateTime?
+  status           ProcessingStatus  @default(UPLOADED)
+  fileKey          String
+  processedFileKey String?
+  gsdCm            Float?
+  cameraModel      String?
+  sizeBytes        Int?
+  mimeType         String?
+  metadata         Json?
+  uploadedById     String
+  projectId        String
+  landParcelId     String?
+  createdAt        DateTime @default(now())
+
+  // Relations
+  uploadedBy       User     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  landParcel       LandParcel? @relation(fields: [landParcelId], references: [id], onDelete: SetNull)
+
+  @@index([uploadedById])
+  @@index([projectId])
+  @@index([landParcelId])
+  @@map("drone_imagery")
+}
+
+model FieldDatabaseEntry {
+  id            String   @id @default(cuid())
+  recordedAt    DateTime @default(now())
+  data          Json     // structured field data (soil, crop, survey)
+  uploadedById  String
+  projectId     String
+  landParcelId  String?
+  createdAt     DateTime @default(now())
+
+  // Relations
+  uploadedBy    User      @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  landParcel    LandParcel? @relation(fields: [landParcelId], references: [id], onDelete: SetNull)
+
+  @@index([uploadedById])
+  @@index([projectId])
+  @@index([landParcelId])
+  @@map("field_database_entries")
+}
+
+enum LedgerEventType {
+  ISSUANCE
+  TRANSFER
+  RETIREMENT
+}
+
+model BlockchainLedgerEntry {
+  id          String          @id @default(cuid())
+  txHash      String          @unique
+  network     String          // e.g., Polygon, Ethereum, etc.
+  eventType   LedgerEventType
+  amount      Float?
+  unit        String?         // e.g., tCO2e
+  timestamp   DateTime        @default(now())
+  raw         Json?
+  userId      String?
+  projectId   String?
+
+  // Relations
+  user        User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([projectId])
+  @@map("blockchain_ledger_entries")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorRole  String?
+  action     String
+  resource   String?
+  method     String?
+  path       String?
+  statusCode Int?
+  ip         String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}
+
