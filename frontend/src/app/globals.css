@@ -3,11 +3,38 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* Light Sky Blue Color Palette */
+  --sky-blue-50: #f0f9ff;
+  --sky-blue-100: #e0f2fe;
+  --sky-blue-200: #bae6fd;
+  --sky-blue-300: #7dd3fc;
+  --sky-blue-400: #38bdf8;
+  --sky-blue-500: #0ea5e9;
+  --sky-blue-600: #0284c7;
+  --sky-blue-700: #0369a1;
+  --sky-blue-800: #075985;
+  --sky-blue-900: #0c4a6e;
+  
+  /* Accent Colors */
+  --mint-green: #10b981;
+  --soft-purple: #8b5cf6;
+  --warm-orange: #f59e0b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-sky-blue-50: var(--sky-blue-50);
+  --color-sky-blue-100: var(--sky-blue-100);
+  --color-sky-blue-200: var(--sky-blue-200);
+  --color-sky-blue-300: var(--sky-blue-300);
+  --color-sky-blue-400: var(--sky-blue-400);
+  --color-sky-blue-500: var(--sky-blue-500);
+  --color-sky-blue-600: var(--sky-blue-600);
+  --color-sky-blue-700: var(--sky-blue-700);
+  --color-sky-blue-800: var(--sky-blue-800);
+  --color-sky-blue-900: var(--sky-blue-900);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -23,4 +50,27 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom Sky Blue Components */
+.sky-gradient {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+}
+
+.sky-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(14, 165, 233, 0.1);
+  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.1);
+}
+
+.sky-button {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+  transition: all 0.3s ease;
+}
+
+.sky-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
 }
