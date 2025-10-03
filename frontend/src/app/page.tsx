@@ -1,33 +1,4 @@
-'use client'
-
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-
 export default function LandingPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const devMode = process.env.NEXT_PUBLIC_DEV_MODE === 'true'
-
-  useEffect(() => {
-    if (devMode || session) {
-      const role = localStorage.getItem('userRole') || 'farmer'
-      router.push(`/dashboard/${role.toLowerCase()}`)
-    }
-  }, [session, router, devMode])
-
-  if (!devMode && status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!devMode && session) {
-    return null // Will redirect
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* Header */}
@@ -37,12 +8,12 @@ export default function LandingPage() {
             <div className="flex items-center">
               <div className="text-2xl font-bold text-blue-600">Oceara</div>
             </div>
-            <button
-              onClick={() => router.push('/auth/signin')}
+            <a
+              href="/auth/signin"
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Get Started
-            </button>
+            </a>
           </div>
         </div>
       </header>
@@ -58,12 +29,12 @@ export default function LandingPage() {
             Connect farmers, buyers, and administrators in a comprehensive ecosystem 
             for carbon credit trading and sustainable agriculture management.
           </p>
-          <button
-            onClick={() => router.push('/auth/signin')}
-            className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors"
+          <a
+            href="/auth/signin"
+            className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors inline-block"
           >
             Join the Platform
-          </button>
+          </a>
         </div>
 
         {/* Role Cards */}

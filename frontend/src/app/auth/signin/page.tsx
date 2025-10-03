@@ -1,6 +1,6 @@
 'use client'
 
-import { signIn, getSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -74,7 +74,7 @@ export default function SignIn() {
           {roles.map((role) => (
             <div
               key={role.id}
-              onClick={() => setSelectedRole(role.id as any)}
+              onClick={() => setSelectedRole(role.id as 'FARMER' | 'BUYER' | 'ADMIN')}
               className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                 selectedRole === role.id
                   ? 'border-blue-500 shadow-lg scale-105'
