@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: oceara-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: oceara-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+
+databases:
+  - name: oceara-db
+    plan: free
+    databaseName: oceara

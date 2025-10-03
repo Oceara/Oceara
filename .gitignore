@@ -1,0 +1,22 @@
+node_modules/
+.env
+.env.*
+dist/
+.next/
+.turbo/
+.DS_Store
+coverage/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+postgres_data/
+*.log
+.idea/
+.vscode/
+
+# Contracts
+contracts/cache/
+contracts/artifacts/
+contracts/typechain-types/
+
+
